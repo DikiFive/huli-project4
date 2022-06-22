@@ -133,7 +133,7 @@ void tis()
  */
 void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
 {
-	static unsigned int T0Count; //在中断函数内是局部变量，中断函数外是全局变量，static就是说下次再运行的时候，他的值不变，如果没有static，那么函数执行后变量就改变了
+	static unsigned int T0Count; //在中断函数内是局部变量，中断函数外是全局变量
 
 	TH0 = 64535 / 256; //赋初值
 	TL0 = 64535 % 256;

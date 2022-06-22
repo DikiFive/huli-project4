@@ -1,0 +1,72 @@
+C51 COMPILER V9.54   DK                                                                    06/21/2022 09:22:16 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE DK
+OBJECT MODULE PLACED IN .\Objects\dk.obj
+COMPILER INVOKED BY: D:\software\keil5\C51\BIN\C51.EXE dk.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Li
+                    -stings\dk.lst) TABS(2) OBJECT(.\Objects\dk.obj)
+
+line level    source
+
+   1          #include <regx52.h>
+   2          unsigned char ntb[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
+   3          void Delay(unsigned int xms);
+   4          void Nt(unsigned char location,num)
+   5          {
+   6   1        switch(location)
+   7   1        {
+   8   2          case 1:P2_4=1;P2_3=1;P2_2=1;break;
+   9   2          case 2:P2_4=1;P2_3=1;P2_2=0;break;
+  10   2          case 3:P2_4=1;P2_3=0;P2_2=1;break;
+  11   2          case 4:P2_4=1;P2_3=0;P2_2=0;break;
+  12   2          case 5:P2_4=0;P2_3=1;P2_2=1;break;
+  13   2          case 6:P2_4=0;P2_3=1;P2_2=0;break;
+  14   2          case 7:P2_4=0;P2_3=0;P2_2=1;break;
+  15   2          case 8:P2_4=0;P2_3=0;P2_2=0;break;
+  16   2        }
+  17   1        P0=ntb[num];
+  18   1        Delay(1);
+  19   1        P0=0x00;
+  20   1      }
+  21          
+  22          void Delay(unsigned int xms)
+  23          {
+  24   1        unsigned char i, j;
+  25   1        while(xms--)
+  26   1        {
+  27   2          i = 2;
+  28   2          j = 239;
+  29   2          do
+  30   2          {
+  31   3            while (--j);
+  32   3          } while (--i);
+  33   2        }
+  34   1      }
+  35          
+  36          void Timer0_Init()
+  37          {
+  38   1          TMOD=0x01; //0000 0001
+  39   1          TF0=0;
+  40   1          TR0=1;
+  41   1          TH0=64535/256;
+  42   1          TL0=64535%256;
+  43   1          ET0=1;
+  44   1          EA=1;
+  45   1          PT0=0;
+  46   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    156    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     10    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+C51 COMPILER V9.54   DK                                                                    06/21/2022 09:22:16 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

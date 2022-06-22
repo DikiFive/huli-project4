@@ -22,6 +22,10 @@ void main()
 		showtime();
 	}
 }
+/**
+ * @brief  展示函数
+ * @retval 无
+ */
 void showtime()
 {
 	LCD_ShowNum(1, 1, Year, 4);

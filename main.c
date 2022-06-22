@@ -6,8 +6,8 @@
 typedef unsigned int ui;
 typedef unsigned char uc;
 //定义时间变量
-uc Hour = 23, Min = 59, Sec = 58;
-ui Year = 2001, Mon = 3, Day = 30;
+uc Hour = 21, Min = 04, Sec = 30;
+ui Year = 2022, Mon = 6, Day = 22;
 uc MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag;
 //闰年判断条件
 unsigned int t;
@@ -162,159 +162,81 @@ void TimeSet(void) //时间设置功能
 		TimeSetSelect++;	//设置选择位加1
 		TimeSetSelect %= 6; //越界清零
 	}
+	//所在位置时间增加
 	if (KeyNum == 3) //按键3按下
 	{
-		TimeSetSelect++; //时间设置位数值加1
-		if (Year > 99)
+		//时间设置位数值加1
+		switch (TimeSetSelect)
 		{
-			Year = 0;
-		} //年越界判断
-		if (Mon > 12)
-		{
-			Mon = 1;
-		} //月越界判断
-		if (Mon == 1 || Mon == 3 || Mon == 5 || Mon == 7 ||
-			Mon == 8 || Mon == 10 || Mon == 12) //日越界判断
-		{
-			if (Day > 31)
-			{
-				Day = 1;
-			} //大月
+		case 0:
+			Year++;
+			break;
+		case 1:
+			Mon++;
+			break;
+		case 2:
+			Day++;
+			break;
+		case 3:
+			Hour++;
+			break;
+		case 4:
+			Min++;
+			break;
+		case 5:
+			Sec++;
+			break;
 		}
-		else if (Mon == 4 || Mon == 6 || Mon == 9 || Mon == 11)
-		{
-			if (Day > 30)
-			{
-				Day = 1;
-			} //小月
-		}
-		else if (Mon == 2)
-		{
-			if (Year % 4 == 0)
-			{
-				if (Day > 29)
-				{
-					Day = 1;
-				} //闰年2月
-			}
-			else
-			{
-				if (Day > 28)
-				{
-					Day = 1;
-				} //平年2月
-			}
-		}
-		if (Hour > 23)
-		{
-			Hour = 0;
-		} //时越界判断
-		if (Min > 59)
-		{
-			Min = 0;
-		} //分越界判断
-		if (Sec > 59)
-		{
-			Sec = 0;
-		} //秒越界判断
 	}
-	if (KeyNum == 4) //按键3按下
+	//所在位置时间减少
+	if (KeyNum == 4) //按键4按下
 	{
-		// todo
-		TimeSetSelect--; //时间设置位数值减1
-		if (Year < 0)
+		switch (TimeSetSelect)
 		{
-			Year = 99;
-		} //年越界判断
-		if (Mon < 1)
-		{
-			Mon = 12;
-		} //月越界判断
-		if (Mon == 1 || Mon == 3 || Mon == 5 || Mon == 7 ||
-			Mon == 8 || Mon == 10 || Mon == 12) //日越界判断
-		{
-			if (Day < 1)
-			{
-				Day = 31;
-			} //大月
-			if (Day > 31)
-			{
-				Day = 1;
-			}
+		case 0:
+			Year--;
+			break;
+		case 1:
+			Mon--;
+			break;
+		case 2:
+			Day--;
+			break;
+		case 3:
+			Hour--;
+			break;
+		case 4:
+			Min--;
+			break;
+		case 5:
+			Sec--;
+			break;
 		}
-		else if (Mon == 4 || Mon == 6 || Mon == 9 || Mon == 11)
-		{
-			if (Day < 1)
-			{
-				Day = 30;
-			} //小月
-			if (Day > 30)
-			{
-				Day = 1;
-			}
-		}
-		else if (Mon == 2)
-		{
-			if (Year % 4 == 0)
-			{
-				if (Day < 1)
-				{
-					Day = 29;
-				} //闰年2月
-				if (Day > 29)
-				{
-					Day = 1;
-				}
-			}
-			else
-			{
-				if (Day < 1)
-				{
-					Day = 28;
-				} //平年2月
-				if (Day > 28)
-				{
-					Day = 1;
-				}
-			}
-		}
-		if (Hour < 0)
-		{
-			Hour = 23;
-		} //时越界判断
-		if (Min < 0)
-		{
-			Min = 59;
-		} //分越界判断
-		if (Sec < 0)
-		{
-			Sec = 59;
-		} //秒越界判断
 	}
 	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
 	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
 	{
-		LCD_ShowString(1, 1, "  ");
+		LCD_ShowString(1, 1, "    ");
 	}
 	else
 	{
-		LCD_ShowNum(1, 1, Year, 2);
+		LCD_ShowNum(1, 1, Year, 4);
 	}
 	if (TimeSetSelect == 1 && TimeSetFlashFlag == 1)
 	{
-		LCD_ShowString(1, 4, "  ");
+		LCD_ShowString(1, 6, "  ");
 	}
 	else
 	{
-		LCD_ShowNum(1, 4, Mon, 2);
+		LCD_ShowNum(1, 6, Mon, 2);
 	}
 	if (TimeSetSelect == 2 && TimeSetFlashFlag == 1)
 	{
-		LCD_ShowString(1, 7, "  ");
+		LCD_ShowString(1, 9, "  ");
 	}
 	else
 	{
-		LCD_ShowNum(1, 7, Day, 2);
+		LCD_ShowNum(1, 9, Day, 2);
 	}
 	if (TimeSetSelect == 3 && TimeSetFlashFlag == 1)
 	{
@@ -356,6 +278,7 @@ void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
 	if (T0Count >= 1000)
 	{
 		T0Count = 0;
+		TimeSetFlashFlag = !TimeSetFlashFlag;
 		Sec++;
 	}
 	tis();

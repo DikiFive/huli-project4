@@ -6,15 +6,17 @@
 typedef unsigned int ui;
 typedef unsigned char uc;
 //定义时间变量
-uc Hour = 21, Min = 04, Sec = 30;
-ui Year = 2022, Mon = 6, Day = 22;
-uc MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag;
+uc Mon = 6, Day = 22, Hour = 21, Min = 04, Sec = 30, MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag, y1, y2;
+ui Year = 2022;
+
 //闰年判断条件
 unsigned int t;
 //声明子函数
 void showtime();
 void tis();
 void TimeSet(void);
+void ReadTime();
+void WriteTime();
 
 //主函数入口
 void main()
@@ -26,6 +28,10 @@ void main()
 	LCD_ShowString(1, 8, "-");
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
+	y2 = Year % 100;
+	y1 = (Year - y2) / 100;
+	WriteTime();
+	ReadTime();
 	while (1)
 	{
 		KeyNum = Key();
@@ -50,6 +56,14 @@ void main()
 			TimeSet();
 			break;
 		}
+		// if (KeyNum == 3)
+		// {
+		// 	ReadTime();
+		// }
+		// if (KeyNum == 4)
+		// {
+		// 	WriteTime();
+		// }
 	}
 }
 
@@ -64,6 +78,35 @@ void showtime()
 	LCD_ShowNum(2, 1, Hour, 2);
 	LCD_ShowNum(2, 4, Min, 2);
 	LCD_ShowNum(2, 7, Sec, 2);
+}
+
+/**
+ * @brief  读取at24c02数据
+ */
+void ReadTime()
+{
+	Mon = AT24C02_ReadByte(111);
+	Day = AT24C02_ReadByte(112);
+	Hour = AT24C02_ReadByte(113);
+	Min = AT24C02_ReadByte(114);
+	Sec = AT24C02_ReadByte(115);
+	y1 = AT24C02_ReadByte(116);
+	y2 = AT24C02_ReadByte(110);
+	Year = y1 * 100 + y2;
+}
+
+/**
+ * @brief  写入at24c02数据
+ */
+void WriteTime()
+{
+	AT24C02_WriteByte(111, Mon);
+	AT24C02_WriteByte(112, Day);
+	AT24C02_WriteByte(113, Hour);
+	AT24C02_WriteByte(114, Min);
+	AT24C02_WriteByte(115, Sec);
+	AT24C02_WriteByte(116, y1);
+	AT24C02_WriteByte(110, y2);
 }
 
 /**
@@ -213,6 +256,9 @@ void TimeSet(void) //时间设置功能
 			break;
 		}
 	}
+
+	WriteTime();
+
 	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
 	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
 	{
@@ -280,6 +326,6 @@ void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
 		T0Count = 0;
 		TimeSetFlashFlag = !TimeSetFlashFlag;
 		Sec++;
+		tis();
 	}
-	tis();
 }

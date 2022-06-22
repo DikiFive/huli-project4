@@ -61,7 +61,8 @@
     ]
   },
   "excludeList": [
-    "<virtual_root>/Source Group 1/Key.c"
+    "<virtual_root>/Source Group 1/Key.c",
+    "<virtual_root>/Source Group 1/timeclock.c"
   ],
   "outDir": "build",
   "deviceName": null,

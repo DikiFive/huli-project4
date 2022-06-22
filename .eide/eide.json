@@ -41,6 +41,9 @@
             "path": "I2C.c"
           },
           {
+            "path": "Key.c"
+          },
+          {
             "path": "LCD1602.c"
           },
           {

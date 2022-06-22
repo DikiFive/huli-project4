@@ -10,22 +10,54 @@ void Delay(unsigned int xms); //延时函数声明
  * @param  num 要显示的数据
  * @retval 无
  */
-void Nt(unsigned char location,num) //数码管显示： 位置 数据
+void Nt(unsigned char location, num) //数码管显示： 位置 数据
 {
-	switch(location)
+	switch (location)
 	{
-		case 1:P2_4=1;P2_3=1;P2_2=1;break;
-		case 2:P2_4=1;P2_3=1;P2_2=0;break;
-		case 3:P2_4=1;P2_3=0;P2_2=1;break;
-		case 4:P2_4=1;P2_3=0;P2_2=0;break;
-		case 5:P2_4=0;P2_3=1;P2_2=1;break;
-		case 6:P2_4=0;P2_3=1;P2_2=0;break;
-		case 7:P2_4=0;P2_3=0;P2_2=1;break;
-		case 8:P2_4=0;P2_3=0;P2_2=0;break;
+	case 1:
+		P2_4 = 1;
+		P2_3 = 1;
+		P2_2 = 1;
+		break;
+	case 2:
+		P2_4 = 1;
+		P2_3 = 1;
+		P2_2 = 0;
+		break;
+	case 3:
+		P2_4 = 1;
+		P2_3 = 0;
+		P2_2 = 1;
+		break;
+	case 4:
+		P2_4 = 1;
+		P2_3 = 0;
+		P2_2 = 0;
+		break;
+	case 5:
+		P2_4 = 0;
+		P2_3 = 1;
+		P2_2 = 1;
+		break;
+	case 6:
+		P2_4 = 0;
+		P2_3 = 1;
+		P2_2 = 0;
+		break;
+	case 7:
+		P2_4 = 0;
+		P2_3 = 0;
+		P2_2 = 1;
+		break;
+	case 8:
+		P2_4 = 0;
+		P2_3 = 0;
+		P2_2 = 0;
+		break;
 	}
-	P0=ntb[num];
+	P0 = ntb[num];
 	Delay(1);
-	P0=0x00;
+	P0 = 0x00;
 }
 
 /**
@@ -36,13 +68,14 @@ void Nt(unsigned char location,num) //数码管显示： 位置 数据
 void Delay(unsigned int xms) //延时函数： 时间
 {
 	unsigned char i, j;
-	while(xms--)
+	while (xms--)
 	{
 		i = 2;
 		j = 239;
 		do
 		{
-			while (--j);
+			while (--j)
+				;
 		} while (--i);
 	}
 }
@@ -96,14 +129,13 @@ unsigned char Key()
  * @param  无
  * @retval 无
  */
-void Timer0Init(void)
+void Timer0_Init() //定时器： 初始化
 {
-	TMOD &= 0xF0; //设置定时器模式
-	TMOD |= 0x01; //设置定时器模式
-	TL0 = 0x18;	  //设置定时初值
-	TH0 = 0xFC;	  //设置定时初值
-	TF0 = 0;	  //清除TF0标志
-	TR0 = 1;	  //定时器0开始计时
+	TMOD = 0x01; // 0000 0001
+	TF0 = 0;
+	TR0 = 1;
+	TH0 = 64535 / 256;
+	TL0 = 64535 % 256;
 	ET0 = 1;
 	EA = 1;
 	PT0 = 0;
@@ -123,4 +155,3 @@ void Timer0_Routine() interrupt 1
 	}
 }
 */
-

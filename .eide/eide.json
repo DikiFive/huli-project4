@@ -38,6 +38,9 @@
             "path": "dk.c"
           },
           {
+            "path": "ds1302.c"
+          },
+          {
             "path": "I2C.c"
           },
           {
@@ -48,13 +51,18 @@
           },
           {
             "path": "STARTUP.A51"
+          },
+          {
+            "path": "timeclock.c"
           }
         ],
         "folders": []
       }
     ]
   },
-  "excludeList": [],
+  "excludeList": [
+    "<virtual_root>/Source Group 1/Key.c"
+  ],
   "outDir": "build",
   "deviceName": null,
   "packDir": null,

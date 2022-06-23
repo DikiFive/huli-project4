@@ -2,18 +2,20 @@
 #include "dk.h"
 #include "LCD1602.h"
 #include "AT24C02.h"
+#include "MatrixKey.h"
 //定义数据类型
 typedef unsigned int ui;
 typedef unsigned char uc;
 //定义时间变量
-uc Mon = 6, Day = 22, Hour = 21, Min = 04, Sec = 30, MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag, y1, y2;
-ui Year = 2022;
+uc MODE = 0, TimeSetSelect, KeyNum, Mxk, TimeSetFlashFlag;
+uc Year[4], Mon[2], Day[2], Hour[2], Min[2], Sec[2];
 //闰年判断条件
 unsigned int t;
 //声明子函数
 void showtime();
 void tis();
 void TimeSet(void);
+void LCD_ShowNumArray(unsigned char Line, unsigned char Column, unsigned int *Number, unsigned char Length);
 void ReadTime();
 void WriteTime();
 
@@ -27,11 +29,10 @@ void main()
 	LCD_ShowString(1, 8, "-");
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
-	// y2 = Year % 100;
-	// y1 = (Year - y2) / 100;
 	while (1)
 	{
 		KeyNum = Key();
+		Mxk = MatrixKey();
 		if (KeyNum == 1) //按键1按下
 		{
 			if (MODE == 0)
@@ -48,7 +49,6 @@ void main()
 		switch (MODE) //根据不同的功能执行不同的函数
 		{
 		case 0:
-			tis();
 			showtime();
 			break;
 		case 1:
@@ -71,12 +71,6 @@ void main()
  */
 void showtime()
 {
-	LCD_ShowNum(1, 1, Year, 4);
-	LCD_ShowNum(1, 6, Mon, 2);
-	LCD_ShowNum(1, 9, Day, 2);
-	LCD_ShowNum(2, 1, Hour, 2);
-	LCD_ShowNum(2, 4, Min, 2);
-	LCD_ShowNum(2, 7, Sec, 2);
 }
 
 /**
@@ -198,74 +192,36 @@ void tis()
  */
 void TimeSet(void) //时间设置功能
 {
+	uc i;
 	if (KeyNum == 2) //按键2按下
 	{
 
 		TimeSetSelect++;	//设置选择位加1
 		TimeSetSelect %= 6; //越界清零
 	}
-	//所在位置时间增加
-	if (KeyNum == 3) //按键3按下
+	switch (TimeSetSelect)
 	{
-
-		//时间设置位数值加1
-		switch (TimeSetSelect)
+	case 0:
+		while (i = 0; i < 4; i++)
 		{
-		case 0:
-			Year++;
-			break;
-		case 1:
-			Mon++;
-			break;
-		case 2:
-			Day++;
-			break;
-		case 3:
-			Hour++;
-			break;
-		case 4:
-			Min++;
-			break;
-		case 5:
-			Sec++;
-			break;
+			/* code */
 		}
-	}
-	//所在位置时间减少
-	if (KeyNum == 4) //按键4按下
-	{
 
-		switch (TimeSetSelect)
-		{
-		case 0:
-			Year--;
-			break;
-		case 1:
-			Mon--;
-			if (Mon == 0)
-			{
-				Mon = 12;
-			}
-			break;
-		case 2:
-			Day--;
-			if (Day == 0)
-			{
-				Mon--;
-				Day = 1;
-			}
-			break;
-		case 3:
-			Hour--;
-			break;
-		case 4:
-			Min--;
-			break;
-		case 5:
-			Sec--;
-			break;
-		}
+		break;
+	case 1:
+		/* code */
+		break;
+	case 2:
+		/* code */
+		break;
+	case 3:
+		/* code */
+		break;
+	case 0:
+		/* code */
+		break;
 	}
+
 	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
 	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
 	{
@@ -316,6 +272,24 @@ void TimeSet(void) //时间设置功能
 		LCD_ShowNum(2, 7, Sec, 2);
 	}
 }
+
+/**
+ * @brief  在LCD1602指定位置开始显示所给数字数组
+ * @param  Line 起始行位置，范围：1~2
+ * @param  Column 起始列位置，范围：1~16
+ * @param  Number 要显示的数字数组，范围：0~65535
+ * @param  Length 要显示数组的长度，范围：1~5
+ * @retval 无
+ */
+void LCD_ShowNumArray(unsigned char Line, unsigned char Column, unsigned int *Number, unsigned char Length)
+{
+	unsigned char i;
+	while (i = 0; i < Length; i++)
+	{
+		LCD_ShowNum(Line, Column, Number[i], Length);
+	}
+}
+
 /**
  * @brief  中断函数
  */

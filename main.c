@@ -8,16 +8,16 @@ typedef unsigned int ui;
 typedef unsigned char uc;
 //定义时间变量
 uc MODE = 0, TimeSetSelect, KeyNum, Mxk, TimeSetFlashFlag;
-uc Year[4], Mon[2], Day[2], Hour[2], Min[2], Sec[2];
+uc Years[4], Mons[2], Days[2], Hours[2], Mins[2], Secs[2];
+uc Year, Mon, Day, Hour, Min, Sec;
 //闰年判断条件
 unsigned int t;
 //声明子函数
-void showtime();
 void tis();
+void showtime();
 void TimeSet(void);
+void split(uc time, uc *p, uc Length);
 void LCD_ShowNumArray(unsigned char Line, unsigned char Column, unsigned int *Number, unsigned char Length);
-void ReadTime();
-void WriteTime();
 
 //主函数入口
 void main()
@@ -55,14 +55,6 @@ void main()
 			TimeSet();
 			break;
 		}
-		// if (KeyNum == 3)
-		// {
-		// 	ReadTime();
-		// }
-		// if (KeyNum == 4)
-		// {
-		// 	WriteTime();
-		// }
 	}
 }
 
@@ -71,40 +63,173 @@ void main()
  */
 void showtime()
 {
-}
-
-/**
- * @brief  读取at24c02数据
- */
-void ReadTime()
-{
-	Mon = AT24C02_ReadByte(111);
-	Day = AT24C02_ReadByte(112);
-	Hour = AT24C02_ReadByte(113);
-	Min = AT24C02_ReadByte(114);
-	Sec = AT24C02_ReadByte(115);
-	y1 = AT24C02_ReadByte(116);
-	y2 = AT24C02_ReadByte(110);
-	Year = (y1 * 100) + y2;
-}
-
-/**
- * @brief  写入at24c02数据
- */
-void WriteTime()
-{
-	AT24C02_WriteByte(111, Mon);
-	AT24C02_WriteByte(112, Day);
-	AT24C02_WriteByte(113, Hour);
-	AT24C02_WriteByte(114, Min);
-	AT24C02_WriteByte(115, Sec);
-	AT24C02_WriteByte(116, y1);
-	AT24C02_WriteByte(110, y2);
+	LCD_ShowNumArray(1, 1, Years, 4);
+	LCD_ShowNumArray(1, 6, Mons, 2);
+	LCD_ShowNumArray(1, 9, Days, 2);
+	LCD_ShowNumArray(2, 1, Hours, 2);
+	LCD_ShowNumArray(2, 4, Mins, 2);
+	LCD_ShowNumArray(2, 7, Secs, 2);
 }
 
 /**
  * @brief  时间计算
  */
+
+/**
+ * @brief  拆分时间数据到数组中
+ * @param  time 时间数据
+ * @param  p 数组地址
+ * @param  Length 数组的长度，范围：1~4
+ * @retval 无
+ */
+void split(uc time, uc *p, uc Length)
+{
+	uc i;
+	uc sum;
+	for (i = 0; i < Length; i++)
+	{
+		sum = time % 10;
+		time /= 10;
+		p[Length - i] = sum;
+	}
+}
+
+/**
+ * @brief  矩阵设置时间数组
+ * @param  p 时间数组
+ * @param  Length 数组的长度，范围：1~4
+ * @retval 无
+ */
+void set(uc *p, uc length)
+{
+	uc i;
+	for (i = 0; i < length; i++)
+	{
+		p[i] = Mxk;
+	}
+}
+/**
+ * @brief  时间设置
+ */
+void TimeSet(void) //时间设置功能
+{
+	if (KeyNum == 2) //按键2按下
+	{
+
+		TimeSetSelect++;	//设置选择位加1
+		TimeSetSelect %= 6; //越界清零
+	}
+	switch (TimeSetSelect)
+	{
+	case 0:
+		set(Years, 4);
+		break;
+	case 1:
+		set(Mons, 2);
+		break;
+	case 2:
+		set(Days, 2);
+		break;
+	case 3:
+		set(Hours, 2);
+		break;
+	case 4:
+		set(Mins, 2);
+		break;
+	case 5:
+		set(Secs, 2);
+		break;
+	}
+
+	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
+	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(1, 1, "    ");
+	}
+	else
+	{
+		LCD_ShowNumArray(1, 1, Years, 4);
+	}
+	if (TimeSetSelect == 1 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(1, 6, "  ");
+	}
+	else
+	{
+		LCD_ShowNumArray(1, 6, Mons, 2);
+	}
+	if (TimeSetSelect == 2 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(1, 9, "  ");
+	}
+	else
+	{
+		LCD_ShowNumArray(1, 9, Days, 2);
+	}
+	if (TimeSetSelect == 3 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(2, 1, "  ");
+	}
+	else
+	{
+		LCD_ShowNumArray(2, 1, Hours, 2);
+	}
+	if (TimeSetSelect == 4 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(2, 4, "  ");
+	}
+	else
+	{
+		LCD_ShowNumArray(2, 4, Mins, 2);
+	}
+	if (TimeSetSelect == 5 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(2, 7, "  ");
+	}
+	else
+	{
+		LCD_ShowNumArray(2, 7, Secs, 2);
+	}
+}
+
+/**
+ * @brief  在LCD1602指定位置开始显示所给数字数组
+ * @param  Line 起始行位置，范围：1~2
+ * @param  Column 起始列位置，范围：1~16
+ * @param  Number 要显示的数字数组，范围：0~65535
+ * @param  Length 要显示数组的长度，范围：1~5
+ * @retval 无
+ */
+void LCD_ShowNumArray(unsigned char Line, unsigned char Column, unsigned int *Number, unsigned char Length)
+{
+	unsigned char i;
+	for (i = 0; i < Length; i++)
+	{
+
+		LCD_ShowNum(Line, Column + i, Number[i], Length);
+	}
+}
+
+/**
+ * @brief  中断函数
+ */
+void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
+{
+	static ui T0Count; //在中断函数内是局部变量，中断函数外是全局变量
+
+	TH0 = 64535 / 256; //赋初值
+	TL0 = 64535 % 256;
+	T0Count++;
+	//定时器过一秒 sec++
+	if (T0Count >= 1000)
+	{
+		T0Count = 0;
+		TimeSetFlashFlag = !TimeSetFlashFlag;
+		Sec++;
+		tis();
+	}
+}
+
 void tis()
 {
 	//大于60 min++
@@ -185,127 +310,5 @@ void tis()
 		Hour = 0;
 		Min = 0;
 		Sec = 0;
-	}
-}
-/**
- * @brief  时间设置
- */
-void TimeSet(void) //时间设置功能
-{
-	uc i;
-	if (KeyNum == 2) //按键2按下
-	{
-
-		TimeSetSelect++;	//设置选择位加1
-		TimeSetSelect %= 6; //越界清零
-	}
-	switch (TimeSetSelect)
-	{
-	case 0:
-		while (i = 0; i < 4; i++)
-		{
-			/* code */
-		}
-
-		break;
-	case 1:
-		/* code */
-		break;
-	case 2:
-		/* code */
-		break;
-	case 3:
-		/* code */
-		break;
-	case 0:
-		/* code */
-		break;
-	}
-
-	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
-	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(1, 1, "    ");
-	}
-	else
-	{
-		LCD_ShowNum(1, 1, Year, 4);
-	}
-	if (TimeSetSelect == 1 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(1, 6, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(1, 6, Mon, 2);
-	}
-	if (TimeSetSelect == 2 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(1, 9, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(1, 9, Day, 2);
-	}
-	if (TimeSetSelect == 3 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(2, 1, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(2, 1, Hour, 2);
-	}
-	if (TimeSetSelect == 4 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(2, 4, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(2, 4, Min, 2);
-	}
-	if (TimeSetSelect == 5 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(2, 7, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(2, 7, Sec, 2);
-	}
-}
-
-/**
- * @brief  在LCD1602指定位置开始显示所给数字数组
- * @param  Line 起始行位置，范围：1~2
- * @param  Column 起始列位置，范围：1~16
- * @param  Number 要显示的数字数组，范围：0~65535
- * @param  Length 要显示数组的长度，范围：1~5
- * @retval 无
- */
-void LCD_ShowNumArray(unsigned char Line, unsigned char Column, unsigned int *Number, unsigned char Length)
-{
-	unsigned char i;
-	while (i = 0; i < Length; i++)
-	{
-		LCD_ShowNum(Line, Column, Number[i], Length);
-	}
-}
-
-/**
- * @brief  中断函数
- */
-void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
-{
-	static unsigned int T0Count, tf; //在中断函数内是局部变量，中断函数外是全局变量
-
-	TH0 = 64535 / 256; //赋初值
-	TL0 = 64535 % 256;
-	T0Count++;
-	//定时器过一秒 sec++
-	if (T0Count >= 1000)
-	{
-		T0Count = 0;
-		TimeSetFlashFlag = !TimeSetFlashFlag;
-		Sec++;
-		tis();
 	}
 }

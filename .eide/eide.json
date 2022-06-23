@@ -32,6 +32,12 @@
         "name": "Source Group 1",
         "files": [
           {
+            "path": "STARTUP.A51"
+          },
+          {
+            "path": "main.c"
+          },
+          {
             "path": "AT24C02.c"
           },
           {
@@ -41,22 +47,17 @@
             "path": "I2C.c"
           },
           {
+            "path": "Key.c"
+          },
+          {
             "path": "LCD1602.c"
-          },
-          {
-            "path": "main.c"
-          },
-          {
-            "path": "STARTUP.A51"
           }
         ],
         "folders": []
       }
     ]
   },
-  "excludeList": [
-    "<virtual_root>/Source Group 1/Key.c"
-  ],
+  "excludeList": [],
   "outDir": "build",
   "deviceName": null,
   "packDir": null,

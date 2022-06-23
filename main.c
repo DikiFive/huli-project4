@@ -8,7 +8,6 @@ typedef unsigned char uc;
 //定义时间变量
 uc Mon = 6, Day = 22, Hour = 21, Min = 04, Sec = 30, MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag, y1, y2;
 ui Year = 2022;
-
 //闰年判断条件
 unsigned int t;
 //声明子函数
@@ -28,10 +27,8 @@ void main()
 	LCD_ShowString(1, 8, "-");
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
-	y2 = Year % 100;
-	y1 = (Year - y2) / 100;
-	WriteTime();
-	ReadTime();
+	// y2 = Year % 100;
+	// y1 = (Year - y2) / 100;
 	while (1)
 	{
 		KeyNum = Key();
@@ -45,11 +42,13 @@ void main()
 			else if (MODE == 1)
 			{
 				MODE = 0;
+				break;
 			}
 		}
 		switch (MODE) //根据不同的功能执行不同的函数
 		{
 		case 0:
+			tis();
 			showtime();
 			break;
 		case 1:
@@ -92,7 +91,7 @@ void ReadTime()
 	Sec = AT24C02_ReadByte(115);
 	y1 = AT24C02_ReadByte(116);
 	y2 = AT24C02_ReadByte(110);
-	Year = y1 * 100 + y2;
+	Year = (y1 * 100) + y2;
 }
 
 /**
@@ -178,7 +177,7 @@ void tis()
 		}
 	}
 	//判断月份是否进入下一年
-	if (Mon > 12)
+	if (Mon > 12 && Mon > 0)
 	{
 		Year++;
 		Mon = 1;
@@ -194,7 +193,6 @@ void tis()
 		Sec = 0;
 	}
 }
-
 /**
  * @brief  时间设置
  */
@@ -202,12 +200,14 @@ void TimeSet(void) //时间设置功能
 {
 	if (KeyNum == 2) //按键2按下
 	{
+
 		TimeSetSelect++;	//设置选择位加1
 		TimeSetSelect %= 6; //越界清零
 	}
 	//所在位置时间增加
 	if (KeyNum == 3) //按键3按下
 	{
+
 		//时间设置位数值加1
 		switch (TimeSetSelect)
 		{
@@ -234,6 +234,7 @@ void TimeSet(void) //时间设置功能
 	//所在位置时间减少
 	if (KeyNum == 4) //按键4按下
 	{
+
 		switch (TimeSetSelect)
 		{
 		case 0:
@@ -241,9 +242,18 @@ void TimeSet(void) //时间设置功能
 			break;
 		case 1:
 			Mon--;
+			if (Mon == 0)
+			{
+				Mon = 12;
+			}
 			break;
 		case 2:
 			Day--;
+			if (Day == 0)
+			{
+				Mon--;
+				Day = 1;
+			}
 			break;
 		case 3:
 			Hour--;
@@ -256,9 +266,6 @@ void TimeSet(void) //时间设置功能
 			break;
 		}
 	}
-
-	WriteTime();
-
 	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
 	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
 	{
@@ -309,13 +316,12 @@ void TimeSet(void) //时间设置功能
 		LCD_ShowNum(2, 7, Sec, 2);
 	}
 }
-
 /**
  * @brief  中断函数
  */
 void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
 {
-	static unsigned int T0Count; //在中断函数内是局部变量，中断函数外是全局变量
+	static unsigned int T0Count, tf; //在中断函数内是局部变量，中断函数外是全局变量
 
 	TH0 = 64535 / 256; //赋初值
 	TL0 = 64535 % 256;

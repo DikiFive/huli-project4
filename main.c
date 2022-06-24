@@ -226,7 +226,7 @@ void ReadTime()
 	Hour = AT24C02_ReadByte(4);
 	Min = AT24C02_ReadByte(5);
 	Sec = AT24C02_ReadByte(6);
-	Year=(uc)(y1*100)+(uc)y2;
+	Year = (uc)(y1 * 100) + (uc)y2;
 }
 
 /**

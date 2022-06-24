@@ -27,7 +27,6 @@ void main()
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
 	ReadTime();
-	// ReadTime();
 	while (1)
 	{
 		KeyNum = Key();
@@ -56,7 +55,6 @@ void main()
 		}
 	}
 }
-
 /**
  * @brief  时间显示
  */
@@ -70,7 +68,6 @@ void showtime()
 	LCD_ShowNum(2, 7, Sec, 2);
 	LCD_ShowString(1, 16, "p");
 }
-
 /**
  * @brief  时间设置
  */
@@ -236,7 +233,6 @@ void ReadTime()
 	Delay(5);
 	Year = (y1 * 100) + y2;
 }
-
 /**
  * @brief  写入at24c02时间数据
  */

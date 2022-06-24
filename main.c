@@ -14,8 +14,6 @@ unsigned int t;
 void showtime();
 void tis();
 void TimeSet(void);
-void ReadTime();
-void WriteTime();
 
 //主函数入口
 void main()
@@ -27,8 +25,6 @@ void main()
 	LCD_ShowString(1, 8, "-");
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
-	// y2 = Year % 100;
-	// y1 = (Year - y2) / 100;
 	while (1)
 	{
 		KeyNum = Key();
@@ -42,27 +38,19 @@ void main()
 			else if (MODE == 1)
 			{
 				MODE = 0;
-				break;
+				showtime();
 			}
 		}
 		switch (MODE) //根据不同的功能执行不同的函数
 		{
 		case 0:
-			tis();
 			showtime();
+			tis();
 			break;
 		case 1:
 			TimeSet();
 			break;
 		}
-		// if (KeyNum == 3)
-		// {
-		// 	ReadTime();
-		// }
-		// if (KeyNum == 4)
-		// {
-		// 	WriteTime();
-		// }
 	}
 }
 
@@ -80,34 +68,166 @@ void showtime()
 }
 
 /**
- * @brief  读取at24c02数据
+ * @brief  时间设置
  */
-void ReadTime()
+void TimeSet(void) //时间设置功能
 {
-	Mon = AT24C02_ReadByte(111);
-	Day = AT24C02_ReadByte(112);
-	Hour = AT24C02_ReadByte(113);
-	Min = AT24C02_ReadByte(114);
-	Sec = AT24C02_ReadByte(115);
-	y1 = AT24C02_ReadByte(116);
-	y2 = AT24C02_ReadByte(110);
-	Year = (y1 * 100) + y2;
-}
+	if (KeyNum == 2) //按键2按下
+	{
 
+		TimeSetSelect++;	//设置选择位加1
+		TimeSetSelect %= 6; //越界清零
+	}
+	//所在位置时间增加
+	if (KeyNum == 3) //按键3按下
+	{
+
+		//时间设置位数值加1
+		switch (TimeSetSelect)
+		{
+		case 0:
+			Year++;
+			break;
+		case 1:
+			Mon++;
+			if (Mon == 13)
+			{
+				Mon = 1;
+			}
+			break;
+		case 2:
+			Day++;
+			break;
+		case 3:
+			Hour++;
+			if (Hour == 24)
+			{
+				Hour = 0;
+			}
+			break;
+		case 4:
+			Min++;
+			if (Min > 59)
+			{
+				Min = 0;
+			}
+			break;
+		case 5:
+			Sec++;
+			break;
+		}
+	}
+	//所在位置时间减少
+	if (KeyNum == 4) //按键4按下
+	{
+
+		switch (TimeSetSelect)
+		{
+		case 0:
+			Year--;
+			break;
+		case 1:
+			Mon--;
+			if (Mon == 0)
+			{
+				Mon = 12;
+			}
+			break;
+		case 2:
+			Day--;
+			if (Day == 0)
+			{
+				Day = 28;
+			}
+			break;
+		case 3:
+			Hour--;
+			if (Hour > 24)
+			{
+				Hour = 23;
+			}
+			break;
+		case 4:
+			Min--;
+			if (Min > 60)
+			{
+				Min = 59;
+			}
+			break;
+		case 5:
+			Sec--;
+			break;
+		}
+	}
+	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
+	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(1, 1, "    ");
+	}
+	else
+	{
+		LCD_ShowNum(1, 1, Year, 4);
+	}
+	if (TimeSetSelect == 1 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(1, 6, "  ");
+	}
+	else
+	{
+		LCD_ShowNum(1, 6, Mon, 2);
+	}
+	if (TimeSetSelect == 2 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(1, 9, "  ");
+	}
+	else
+	{
+		LCD_ShowNum(1, 9, Day, 2);
+	}
+	if (TimeSetSelect == 3 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(2, 1, "  ");
+	}
+	else
+	{
+		LCD_ShowNum(2, 1, Hour, 2);
+	}
+	if (TimeSetSelect == 4 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(2, 4, "  ");
+	}
+	else
+	{
+		LCD_ShowNum(2, 4, Min, 2);
+	}
+	if (TimeSetSelect == 5 && TimeSetFlashFlag == 1)
+	{
+		LCD_ShowString(2, 7, "  ");
+	}
+	else
+	{
+		LCD_ShowNum(2, 7, Sec, 2);
+	}
+}
 /**
- * @brief  写入at24c02数据
+ * @brief  中断函数
  */
-void WriteTime()
+void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
 {
-	AT24C02_WriteByte(111, Mon);
-	AT24C02_WriteByte(112, Day);
-	AT24C02_WriteByte(113, Hour);
-	AT24C02_WriteByte(114, Min);
-	AT24C02_WriteByte(115, Sec);
-	AT24C02_WriteByte(116, y1);
-	AT24C02_WriteByte(110, y2);
-}
+	static unsigned int T0Count; //在中断函数内是局部变量，中断函数外是全局变量
 
+	TH0 = 64535 / 256; //赋初值
+	TL0 = 64535 % 256;
+	T0Count++;
+	//定时器过一秒 sec++
+	if (T0Count >= 1000)
+	{
+		T0Count = 0;
+		TimeSetFlashFlag = !TimeSetFlashFlag;
+		Sec++;
+		tis();
+	}
+}
 /**
  * @brief  时间计算
  */
@@ -191,147 +311,5 @@ void tis()
 		Hour = 0;
 		Min = 0;
 		Sec = 0;
-	}
-}
-/**
- * @brief  时间设置
- */
-void TimeSet(void) //时间设置功能
-{
-	if (KeyNum == 2) //按键2按下
-	{
-
-		TimeSetSelect++;	//设置选择位加1
-		TimeSetSelect %= 6; //越界清零
-	}
-	//所在位置时间增加
-	if (KeyNum == 3) //按键3按下
-	{
-
-		//时间设置位数值加1
-		switch (TimeSetSelect)
-		{
-		case 0:
-			Year++;
-			break;
-		case 1:
-			Mon++;
-			break;
-		case 2:
-			Day++;
-			break;
-		case 3:
-			Hour++;
-			break;
-		case 4:
-			Min++;
-			break;
-		case 5:
-			Sec++;
-			break;
-		}
-	}
-	//所在位置时间减少
-	if (KeyNum == 4) //按键4按下
-	{
-
-		switch (TimeSetSelect)
-		{
-		case 0:
-			Year--;
-			break;
-		case 1:
-			Mon--;
-			if (Mon == 0)
-			{
-				Mon = 12;
-			}
-			break;
-		case 2:
-			Day--;
-			if (Day == 0)
-			{
-				Mon--;
-				Day = 1;
-			}
-			break;
-		case 3:
-			Hour--;
-			break;
-		case 4:
-			Min--;
-			break;
-		case 5:
-			Sec--;
-			break;
-		}
-	}
-	//更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
-	if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(1, 1, "    ");
-	}
-	else
-	{
-		LCD_ShowNum(1, 1, Year, 4);
-	}
-	if (TimeSetSelect == 1 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(1, 6, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(1, 6, Mon, 2);
-	}
-	if (TimeSetSelect == 2 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(1, 9, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(1, 9, Day, 2);
-	}
-	if (TimeSetSelect == 3 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(2, 1, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(2, 1, Hour, 2);
-	}
-	if (TimeSetSelect == 4 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(2, 4, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(2, 4, Min, 2);
-	}
-	if (TimeSetSelect == 5 && TimeSetFlashFlag == 1)
-	{
-		LCD_ShowString(2, 7, "  ");
-	}
-	else
-	{
-		LCD_ShowNum(2, 7, Sec, 2);
-	}
-}
-/**
- * @brief  中断函数
- */
-void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
-{
-	static unsigned int T0Count, tf; //在中断函数内是局部变量，中断函数外是全局变量
-
-	TH0 = 64535 / 256; //赋初值
-	TL0 = 64535 % 256;
-	T0Count++;
-	//定时器过一秒 sec++
-	if (T0Count >= 1000)
-	{
-		T0Count = 0;
-		TimeSetFlashFlag = !TimeSetFlashFlag;
-		Sec++;
-		tis();
 	}
 }

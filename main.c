@@ -3,10 +3,10 @@
 #include "LCD1602.h"
 #include "AT24C02.h"
 //定义数据类型
-typedef unsigned int ui;
 typedef unsigned char uc;
+typedef unsigned int ui;
 //定义时间变量
-uc Mon = 6, Day = 22, Hour = 21, Min = 04, Sec = 30, MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag, y1, y2;
+uc Mon = 6, Day = 22, Hour = 21, Min = 4, Sec = 30, MODE = 0, TimeSetSelect, KeyNum, TimeSetFlashFlag, y1, y2;
 ui Year = 2022;
 //闰年判断条件
 unsigned int t;
@@ -14,7 +14,8 @@ unsigned int t;
 void showtime();
 void tis();
 void TimeSet(void);
-
+void WriteTime();
+void ReadTime();
 //主函数入口
 void main()
 {
@@ -25,6 +26,9 @@ void main()
 	LCD_ShowString(1, 8, "-");
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
+	y2 = (uc)(Year % 100);
+	y1 = (uc)(Year / 100);
+	ReadTime();
 	while (1)
 	{
 		KeyNum = Key();
@@ -51,6 +55,7 @@ void main()
 			TimeSet();
 			break;
 		}
+		WriteTime();
 	}
 }
 
@@ -208,6 +213,34 @@ void TimeSet(void) //时间设置功能
 	{
 		LCD_ShowNum(2, 7, Sec, 2);
 	}
+}
+/**
+ * @brief  读取at24c02时间数据
+ */
+void ReadTime()
+{
+	y1 = AT24C02_ReadByte(0);
+	y2 = AT24C02_ReadByte(1);
+	Mon = AT24C02_ReadByte(2);
+	Day = AT24C02_ReadByte(3);
+	Hour = AT24C02_ReadByte(4);
+	Min = AT24C02_ReadByte(5);
+	Sec = AT24C02_ReadByte(6);
+	Year=(uc)(y1*100)+(uc)y2;
+}
+
+/**
+ * @brief  写入at24c02时间数据
+ */
+void WriteTime()
+{
+	AT24C02_WriteByte(0, y1);
+	AT24C02_WriteByte(1, y2);
+	AT24C02_WriteByte(2, Mon);
+	AT24C02_WriteByte(3, Day);
+	AT24C02_WriteByte(4, Hour);
+	AT24C02_WriteByte(5, Min);
+	AT24C02_WriteByte(6, Sec);
 }
 /**
  * @brief  中断函数

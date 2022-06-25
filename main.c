@@ -13,7 +13,7 @@ unsigned int t;
 //声明子函数
 void showtime();
 void tis();
-void TimeSet(void);
+void TimeSet();
 void WriteTime();
 void ReadTime();
 //主函数入口
@@ -75,11 +75,12 @@ void showtime()
 	{
 		LCD_ShowString(1, 16, "P");
 	}
+	LCD_ShowNum(1, 12, Day, 2);
 }
 /**
  * @brief  时间设置
  */
-void TimeSet(void) //时间设置功能
+void TimeSet() //时间设置功能
 {
 	LCD_ShowString(2, 11, "change");
 	if (KeyNum == 2) //按键2按下
@@ -358,11 +359,12 @@ void tis()
 	}
 	//重开世纪超过4位数
 	if (Year > 9999)
+	{
 		Year = 0;
-	Mon = 0;
-	Day = 0;
-	Hour = 0;
-	Min = 0;
-	Sec = 0;
+		Mon = 0;
+		Day = 0;
+		Hour = 0;
+		Min = 0;
+		Sec = 0;
+	}
 }
-

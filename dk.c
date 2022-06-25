@@ -81,7 +81,6 @@ void Delay(unsigned int xms) //延时函数： 时间
 }
 /**
  * @brief  获取独立按键键码
- * @param  无
  * @retval 按下按键的键码，范围：0~4，无按键按下时返回值为0
  */
 unsigned char Key()
@@ -126,7 +125,6 @@ unsigned char Key()
 
 /**
  * @brief  定时器0初始化，1毫秒@12.000MHz
- * @param  无
  * @retval 无
  */
 void Timer0_Init() //定时器： 初始化

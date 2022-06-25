@@ -54,9 +54,7 @@
       }
     ]
   },
-  "excludeList": [
-    "<virtual_root>/Source Group 1/Key.c"
-  ],
+  "excludeList": [],
   "outDir": "build",
   "deviceName": null,
   "packDir": null,

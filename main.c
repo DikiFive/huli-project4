@@ -1,7 +1,7 @@
-#include <regx52.h>
-#include "dk.h"
-#include "LCD1602.h"
-#include "AT24C02.h"
+#include <regx52.h>	 //stc89c52头文件
+#include "dk.h"		 //自己集成常用函数头文件
+#include "LCD1602.h" //lcd头文件
+#include "AT24C02.h" //掉电记忆储存头文件
 //定义数据类型
 typedef unsigned char uc;
 typedef unsigned int ui;
@@ -26,37 +26,37 @@ void main()
 	LCD_ShowString(1, 8, "-");
 	LCD_ShowString(2, 3, ":");
 	LCD_ShowString(2, 6, ":");
-	ReadTime();
+	ReadTime(); //读取数据
 	while (1)
 	{
-		KeyNum = Key();
+		KeyNum = Key();	 //获取独立按键键位数据
 		if (KeyNum == 1) //按键1按下
 		{
-			if (MODE == 0)
+			if (MODE == 0) //模式0到模式1
 			{
 				MODE = 1;
 				TimeSetSelect = 0;
-			} //功能切换
-			else if (MODE == 1)
+			}					//功能切换
+			else if (MODE == 1) //模式1到模式0
 			{
 				MODE = 0;
-				showtime();
+				showtime(); //展示时间数据
 			}
 		}
 		switch (MODE) //根据不同的功能执行不同的函数
 		{
 		case 0:
 			showtime();
-			tis();
+			tis(); //计算时间进制
 			break;
 		case 1:
-			TimeSet();
+			TimeSet(); //时间设置函数
 			break;
 		}
 	}
 }
 /**
- * @brief  时间显示
+ * @brief  时间显示与模式显示
  */
 void showtime()
 {
@@ -66,14 +66,22 @@ void showtime()
 	LCD_ShowNum(2, 1, Hour, 2);
 	LCD_ShowNum(2, 4, Min, 2);
 	LCD_ShowNum(2, 7, Sec, 2);
-	LCD_ShowString(1, 16, "p");
+	LCD_ShowString(2, 11, "normal");
+	if ((Year % 4 == 0 && Year % 100 != 0) || Year % 400 == 0) //判断闰平年
+	{
+		LCD_ShowString(1, 16, "R");
+	}
+	else
+	{
+		LCD_ShowString(1, 16, "P");
+	}
 }
 /**
  * @brief  时间设置
  */
 void TimeSet(void) //时间设置功能
 {
-	LCD_ShowString(1, 16, "s");
+	LCD_ShowString(2, 11, "change");
 	if (KeyNum == 2) //按键2按下
 	{
 
@@ -210,7 +218,7 @@ void TimeSet(void) //时间设置功能
 	{
 		LCD_ShowNum(2, 7, Sec, 2);
 	}
-	WriteTime();
+	WriteTime(); //写入时间数据
 }
 /**
  * @brief  读取at24c02时间数据
@@ -231,14 +239,14 @@ void ReadTime()
 	Delay(5);
 	Sec = AT24C02_ReadByte(6);
 	Delay(5);
-	Year = (y1 * 100) + y2;
+	Year = (y1 * 100) + y2; //计算year
 }
 /**
  * @brief  写入at24c02时间数据
  */
 void WriteTime()
 {
-	y2 = (Year % 100);
+	y2 = (Year % 100); //拆分year到y1，y2方便写入
 	y1 = (Year / 100);
 	AT24C02_WriteByte(0, y1);
 	Delay(5);
@@ -269,7 +277,7 @@ void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
 	if (T0Count >= 1000)
 	{
 		T0Count = 0;
-		TimeSetFlashFlag = !TimeSetFlashFlag;
+		TimeSetFlashFlag = !TimeSetFlashFlag; //取反
 		Sec++;
 		tis();
 	}
@@ -350,12 +358,11 @@ void tis()
 	}
 	//重开世纪超过4位数
 	if (Year > 9999)
-	{
 		Year = 0;
-		Mon = 0;
-		Day = 0;
-		Hour = 0;
-		Min = 0;
-		Sec = 0;
-	}
+	Mon = 0;
+	Day = 0;
+	Hour = 0;
+	Min = 0;
+	Sec = 0;
 }
+

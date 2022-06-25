@@ -47,9 +47,6 @@
             "path": "main.c"
           },
           {
-            "path": "MatrixKey.c"
-          },
-          {
             "path": "STARTUP.A51"
           }
         ],
@@ -57,7 +54,9 @@
       }
     ]
   },
-  "excludeList": [],
+  "excludeList": [
+    "<virtual_root>/Source Group 1/Key.c"
+  ],
   "outDir": "build",
   "deviceName": null,
   "packDir": null,

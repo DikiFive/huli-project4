@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   MAIN                                                                  06/21/2022 09:22:16 PAGE 1   
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
@@ -8,21 +8,395 @@ COMPILER INVOKED BY: D:\software\keil5\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,S
 
 line level    source
 
-   1          #include <regx52.h>
-   2          #include "dk.h"
-   3          void main()
-   4          {
-   5   1        while(1)
-   6   1        {
-   7   2          
-   8   2        }
-   9   1      }
+   1          #include <regx52.h>  //stc89c52头文件
+   2          #include "dk.h"    //自己集成常用函数头文件
+   3          #include "LCD1602.h" //lcd头文件
+   4          #include "AT24C02.h" //掉电记忆储存头文件
+   5          //定义数据类型
+   6          typedef unsigned char uc;
+   7          typedef unsigned int ui;
+   8          //定义时间变量
+   9          uc Mon = 6, Day = 22, Hour = 21, Min = 4, Sec = 30, MODE = 0, TimeSetSelect, KeyNum, mxk, TimeSetFlashFlag
+             -, y1, y2;
+  10          ui Year = 2022;
+  11          //闰年判断条件
+  12          unsigned int t;
+  13          //声明子函数
+  14          void showtime();
+  15          void tis();
+  16          void TimeSet(void);
+  17          void WriteTime();
+  18          void ReadTime();
+  19          //主函数入口
+  20          void main()
+  21          {
+  22   1        //初始化和静态显示
+  23   1        LCD_Init();
+  24   1        Timer0_Init();
+  25   1        LCD_ShowString(1, 5, "-");
+  26   1        LCD_ShowString(1, 8, "-");
+  27   1        LCD_ShowString(2, 3, ":");
+  28   1        LCD_ShowString(2, 6, ":");
+  29   1        ReadTime(); //读取数据
+  30   1        while (1)
+  31   1        {
+  32   2          KeyNum = Key();  //获取独立按键键位数据
+  33   2          if (KeyNum == 1) //按键1按下
+  34   2          {
+  35   3            if (MODE == 0) //模式0到模式1
+  36   3            {
+  37   4              MODE = 1;
+  38   4              TimeSetSelect = 0;
+  39   4            }         //功能切换
+  40   3            else if (MODE == 1) //模式1到模式0
+  41   3            {
+  42   4              MODE = 0;
+  43   4              showtime(); //展示时间数据
+  44   4            }
+  45   3          }
+  46   2          switch (MODE) //根据不同的功能执行不同的函数
+  47   2          {
+  48   3          case 0:
+  49   3            showtime();
+  50   3            tis(); //计算时间进制
+  51   3            break;
+  52   3          case 1:
+  53   3            TimeSet(); //时间设置函数
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 2   
+
+  54   3            break;
+  55   3          }
+  56   2        }
+  57   1      }
+  58          /**
+  59           * @brief  时间显示与模式显示
+  60           */
+  61          void showtime()
+  62          {
+  63   1        LCD_ShowNum(1, 1, Year, 4);
+  64   1        LCD_ShowNum(1, 6, Mon, 2);
+  65   1        LCD_ShowNum(1, 9, Day, 2);
+  66   1        LCD_ShowNum(2, 1, Hour, 2);
+  67   1        LCD_ShowNum(2, 4, Min, 2);
+  68   1        LCD_ShowNum(2, 7, Sec, 2);
+  69   1        LCD_ShowString(2, 11, "normal");
+  70   1        if ((Year % 4 == 0 && Year % 100 != 0) || Year % 400 == 0) //判断闰平年
+  71   1        {
+  72   2          LCD_ShowString(1, 16, "R");
+  73   2        }
+  74   1        else
+  75   1        {
+  76   2          LCD_ShowString(1, 16, "P");
+  77   2        }
+  78   1      }
+  79          /**
+  80           * @brief  时间设置
+  81           */
+  82          void TimeSet(void) //时间设置功能
+  83          {
+  84   1        LCD_ShowString(2, 11, "change");
+  85   1        if (KeyNum == 2) //按键2按下
+  86   1        {
+  87   2      
+  88   2          TimeSetSelect++;  //设置选择位加1
+  89   2          TimeSetSelect %= 6; //越界清零
+  90   2        }
+  91   1        //所在位置时间增加
+  92   1        if (KeyNum == 3) //按键3按下
+  93   1        {
+  94   2      
+  95   2          //时间设置位数值加1
+  96   2          switch (TimeSetSelect)
+  97   2          {
+  98   3          case 0:
+  99   3            Year++;
+ 100   3            break;
+ 101   3          case 1:
+ 102   3            Mon++;
+ 103   3            if (Mon == 13)
+ 104   3            {
+ 105   4              Mon = 1;
+ 106   4            }
+ 107   3            break;
+ 108   3          case 2:
+ 109   3            Day++;
+ 110   3            break;
+ 111   3          case 3:
+ 112   3            Hour++;
+ 113   3            if (Hour == 24)
+ 114   3            {
+ 115   4              Hour = 0;
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 3   
+
+ 116   4            }
+ 117   3            break;
+ 118   3          case 4:
+ 119   3            Min++;
+ 120   3            if (Min > 59)
+ 121   3            {
+ 122   4              Min = 0;
+ 123   4            }
+ 124   3            break;
+ 125   3          case 5:
+ 126   3            Sec++;
+ 127   3            break;
+ 128   3          }
+ 129   2        }
+ 130   1        //所在位置时间减少
+ 131   1        if (KeyNum == 4) //按键4按下
+ 132   1        {
+ 133   2      
+ 134   2          switch (TimeSetSelect)
+ 135   2          {
+ 136   3          case 0:
+ 137   3            Year--;
+ 138   3            break;
+ 139   3          case 1:
+ 140   3            Mon--;
+ 141   3            if (Mon == 0)
+ 142   3            {
+ 143   4              Mon = 12;
+ 144   4            }
+ 145   3            break;
+ 146   3          case 2:
+ 147   3            Day--;
+ 148   3            if (Day == 0)
+ 149   3            {
+ 150   4              Day = 28;
+ 151   4            }
+ 152   3            break;
+ 153   3          case 3:
+ 154   3            Hour--;
+ 155   3            if (Hour > 24)
+ 156   3            {
+ 157   4              Hour = 23;
+ 158   4            }
+ 159   3            break;
+ 160   3          case 4:
+ 161   3            Min--;
+ 162   3            if (Min > 60)
+ 163   3            {
+ 164   4              Min = 59;
+ 165   4            }
+ 166   3            break;
+ 167   3          case 5:
+ 168   3            Sec--;
+ 169   3            break;
+ 170   3          }
+ 171   2        }
+ 172   1        //更新显示，根据TimeSetSelect和TimeSetFlashFlag判断可完成闪烁功能
+ 173   1        if (TimeSetSelect == 0 && TimeSetFlashFlag == 1)
+ 174   1        {
+ 175   2          LCD_ShowString(1, 1, "    ");
+ 176   2        }
+ 177   1        else
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 4   
+
+ 178   1        {
+ 179   2          LCD_ShowNum(1, 1, Year, 4);
+ 180   2        }
+ 181   1        if (TimeSetSelect == 1 && TimeSetFlashFlag == 1)
+ 182   1        {
+ 183   2          LCD_ShowString(1, 6, "  ");
+ 184   2        }
+ 185   1        else
+ 186   1        {
+ 187   2          LCD_ShowNum(1, 6, Mon, 2);
+ 188   2        }
+ 189   1        if (TimeSetSelect == 2 && TimeSetFlashFlag == 1)
+ 190   1        {
+ 191   2          LCD_ShowString(1, 9, "  ");
+ 192   2        }
+ 193   1        else
+ 194   1        {
+ 195   2          LCD_ShowNum(1, 9, Day, 2);
+ 196   2        }
+ 197   1        if (TimeSetSelect == 3 && TimeSetFlashFlag == 1)
+ 198   1        {
+ 199   2          LCD_ShowString(2, 1, "  ");
+ 200   2        }
+ 201   1        else
+ 202   1        {
+ 203   2          LCD_ShowNum(2, 1, Hour, 2);
+ 204   2        }
+ 205   1        if (TimeSetSelect == 4 && TimeSetFlashFlag == 1)
+ 206   1        {
+ 207   2          LCD_ShowString(2, 4, "  ");
+ 208   2        }
+ 209   1        else
+ 210   1        {
+ 211   2          LCD_ShowNum(2, 4, Min, 2);
+ 212   2        }
+ 213   1        if (TimeSetSelect == 5 && TimeSetFlashFlag == 1)
+ 214   1        {
+ 215   2          LCD_ShowString(2, 7, "  ");
+ 216   2        }
+ 217   1        else
+ 218   1        {
+ 219   2          LCD_ShowNum(2, 7, Sec, 2);
+ 220   2        }
+ 221   1        WriteTime(); //写入时间数据
+ 222   1      }
+ 223          /**
+ 224           * @brief  读取at24c02时间数据
+ 225           */
+ 226          void ReadTime()
+ 227          {
+ 228   1        y1 = AT24C02_ReadByte(0);
+ 229   1        Delay(5);
+ 230   1        y2 = AT24C02_ReadByte(1);
+ 231   1        Delay(5);
+ 232   1        Mon = AT24C02_ReadByte(2);
+ 233   1        Delay(5);
+ 234   1        Day = AT24C02_ReadByte(3);
+ 235   1        Delay(5);
+ 236   1        Hour = AT24C02_ReadByte(4);
+ 237   1        Delay(5);
+ 238   1        Min = AT24C02_ReadByte(5);
+ 239   1        Delay(5);
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 5   
+
+ 240   1        Sec = AT24C02_ReadByte(6);
+ 241   1        Delay(5);
+ 242   1        Year = (y1 * 100) + y2; //计算year
+ 243   1      }
+ 244          /**
+ 245           * @brief  写入at24c02时间数据
+ 246           */
+ 247          void WriteTime()
+ 248          {
+ 249   1        y2 = (Year % 100); //拆分year到y1，y2方便写入
+ 250   1        y1 = (Year / 100);
+ 251   1        AT24C02_WriteByte(0, y1);
+ 252   1        Delay(5);
+ 253   1        AT24C02_WriteByte(1, y2);
+ 254   1        Delay(5);
+ 255   1        AT24C02_WriteByte(2, Mon);
+ 256   1        Delay(5);
+ 257   1        AT24C02_WriteByte(3, Day);
+ 258   1        Delay(5);
+ 259   1        AT24C02_WriteByte(4, Hour);
+ 260   1        Delay(5);
+ 261   1        AT24C02_WriteByte(5, Min);
+ 262   1        Delay(5);
+ 263   1        AT24C02_WriteByte(6, Sec);
+ 264   1        Delay(5);
+ 265   1      }
+ 266          /**
+ 267           * @brief  中断函数
+ 268           */
+ 269          void Timer0_Routine() interrupt 1 //中断函数,一般放在main.c里
+ 270          {
+ 271   1        static unsigned int T0Count; //在中断函数内是局部变量，中断函数外是全局变量
+ 272   1      
+ 273   1        TH0 = 64535 / 256; //赋初值
+ 274   1        TL0 = 64535 % 256;
+ 275   1        T0Count++;
+ 276   1        //定时器过一秒 sec++
+ 277   1        if (T0Count >= 1000)
+ 278   1        {
+ 279   2          T0Count = 0;
+ 280   2          TimeSetFlashFlag = !TimeSetFlashFlag; //取反
+ 281   2          Sec++;
+ 282   2          tis();
+ 283   2        }
+ 284   1      }
+ 285          /**
+ 286           * @brief  时间计算
+ 287           */
+ 288          void tis()
+ 289          {
+ 290   1        //大于60 min++
+ 291   1        if (Sec >= 60)
+ 292   1        {
+ 293   2          Min++;
+ 294   2          Sec = 0;
+ 295   2        }
+ 296   1        //大于60 hour++
+ 297   1        if (Min >= 60)
+ 298   1        {
+ 299   2          Hour++;
+ 300   2          Min = 0;
+ 301   2        }
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 6   
+
+ 302   1        //大于24 day++
+ 303   1        if (Hour >= 24)
+ 304   1        {
+ 305   2          Hour = 0;
+ 306   2          Day++;
+ 307   2        }
+ 308   1        //重置闰年判断条件
+ 309   1        t = 0;
+ 310   1        //闰年判断
+ 311   1        if ((Year % 4 == 0 && Year % 100 != 0) || Year % 400 == 0)
+ 312   1        {
+ 313   2          t = 1;
+ 314   2        }
+ 315   1        //判断闰年月份情况
+ 316   1        if (t == 1)
+ 317   1        {
+ 318   2          if (Day > 29 && Mon == 2)
+ 319   2          {
+ 320   3            Mon++;
+ 321   3            Day = 1;
+ 322   3          }
+ 323   2          else if (Day > 30 && (Mon == 4 || Mon == 6 || Mon == 9 || Mon == 11))
+ 324   2          {
+ 325   3            Mon++;
+ 326   3            Day = 1;
+ 327   3          }
+ 328   2          else if (Day > 31 && (Mon == 1 || Mon == 3 || Mon == 5 || Mon == 7 || Mon == 8 || Mon == 10 || Mon == 12
+             -))
+ 329   2          {
+ 330   3            Mon++;
+ 331   3            Day = 1;
+ 332   3          }
+ 333   2        }
+ 334   1        //判断平年月份情况
+ 335   1        if (t != 1)
+ 336   1        {
+ 337   2          if (Day > 28 && Mon == 2)
+ 338   2          {
+ 339   3            Mon++;
+ 340   3            Day = 1;
+ 341   3          }
+ 342   2          else if (Day > 31 && (Mon == 1 || Mon == 3 || Mon == 5 || Mon == 7 || Mon == 8 || Mon == 10 || Mon == 12
+             -))
+ 343   2          {
+ 344   3            Mon++;
+ 345   3            Day = 1;
+ 346   3          }
+ 347   2          else if (Day > 30 && (Mon == 4 || Mon == 6 || Mon == 9 || Mon == 11))
+ 348   2          {
+ 349   3            Mon++;
+ 350   3            Day = 1;
+ 351   3          }
+ 352   2        }
+ 353   1        //判断月份是否进入下一年
+ 354   1        if (Mon > 12 && Mon > 0)
+ 355   1        {
+ 356   2          Year++;
+ 357   2          Mon = 1;
+ 358   2        }
+ 359   1        //重开世纪超过4位数
+ 360   1        if (Year > 9999)
+ 361   1          Year = 0;
+C51 COMPILER V9.54   MAIN                                                                  06/27/2022 15:22:46 PAGE 7   
+
+ 362   1        Mon = 0;
+ 363   1        Day = 0;
+ 364   1        Hour = 0;
+ 365   1        Min = 0;
+ 366   1        Sec = 0;
+ 367   1      }
+ 368          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =      2    ----
-   CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
+   CODE SIZE        =   1728    ----
+   CONSTANT SIZE    =     30    ----
+   XDATA SIZE       =     18    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

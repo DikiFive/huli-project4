@@ -1,4 +1,4 @@
-C51 COMPILER V9.54   DK                                                                    06/21/2022 09:22:16 PAGE 1   
+C51 COMPILER V9.54   DK                                                                    06/27/2022 15:22:46 PAGE 1   
 
 
 C51 COMPILER V9.54, COMPILATION OF MODULE DK
@@ -9,61 +9,175 @@ COMPILER INVOKED BY: D:\software\keil5\C51\BIN\C51.EXE dk.c LARGE OPTIMIZE(8,SPE
 line level    source
 
    1          #include <regx52.h>
-   2          unsigned char ntb[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
-   3          void Delay(unsigned int xms);
-   4          void Nt(unsigned char location,num)
-   5          {
-   6   1        switch(location)
-   7   1        {
-   8   2          case 1:P2_4=1;P2_3=1;P2_2=1;break;
-   9   2          case 2:P2_4=1;P2_3=1;P2_2=0;break;
-  10   2          case 3:P2_4=1;P2_3=0;P2_2=1;break;
-  11   2          case 4:P2_4=1;P2_3=0;P2_2=0;break;
-  12   2          case 5:P2_4=0;P2_3=1;P2_2=1;break;
-  13   2          case 6:P2_4=0;P2_3=1;P2_2=0;break;
-  14   2          case 7:P2_4=0;P2_3=0;P2_2=1;break;
-  15   2          case 8:P2_4=0;P2_3=0;P2_2=0;break;
-  16   2        }
-  17   1        P0=ntb[num];
-  18   1        Delay(1);
-  19   1        P0=0x00;
-  20   1      }
-  21          
-  22          void Delay(unsigned int xms)
-  23          {
-  24   1        unsigned char i, j;
-  25   1        while(xms--)
-  26   1        {
-  27   2          i = 2;
-  28   2          j = 239;
-  29   2          do
-  30   2          {
-  31   3            while (--j);
-  32   3          } while (--i);
-  33   2        }
-  34   1      }
-  35          
-  36          void Timer0_Init()
-  37          {
-  38   1          TMOD=0x01; //0000 0001
-  39   1          TF0=0;
-  40   1          TR0=1;
-  41   1          TH0=64535/256;
-  42   1          TL0=64535%256;
-  43   1          ET0=1;
-  44   1          EA=1;
-  45   1          PT0=0;
-  46   1      }
+   2          
+   3          unsigned char ntb[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f}; //数码管数组初�
+             -�化
+   4          
+   5          void Delay(unsigned int xms); //延时函数声明
+   6          
+   7          /**
+   8           * @brief  数码管显示
+   9           * @param  location 显示的地址
+  10           * @param  num 要显示的数据
+  11           * @retval 无
+  12           */
+  13          void Nt(unsigned char location, num) //数码管显示： 位置 数据
+  14          {
+  15   1        switch (location)
+  16   1        {
+  17   2        case 1:
+  18   2          P2_4 = 1;
+  19   2          P2_3 = 1;
+  20   2          P2_2 = 1;
+  21   2          break;
+  22   2        case 2:
+  23   2          P2_4 = 1;
+  24   2          P2_3 = 1;
+  25   2          P2_2 = 0;
+  26   2          break;
+  27   2        case 3:
+  28   2          P2_4 = 1;
+  29   2          P2_3 = 0;
+  30   2          P2_2 = 1;
+  31   2          break;
+  32   2        case 4:
+  33   2          P2_4 = 1;
+  34   2          P2_3 = 0;
+  35   2          P2_2 = 0;
+  36   2          break;
+  37   2        case 5:
+  38   2          P2_4 = 0;
+  39   2          P2_3 = 1;
+  40   2          P2_2 = 1;
+  41   2          break;
+  42   2        case 6:
+  43   2          P2_4 = 0;
+  44   2          P2_3 = 1;
+  45   2          P2_2 = 0;
+  46   2          break;
+  47   2        case 7:
+  48   2          P2_4 = 0;
+  49   2          P2_3 = 0;
+  50   2          P2_2 = 1;
+  51   2          break;
+  52   2        case 8:
+  53   2          P2_4 = 0;
+C51 COMPILER V9.54   DK                                                                    06/27/2022 15:22:46 PAGE 2   
+
+  54   2          P2_3 = 0;
+  55   2          P2_2 = 0;
+  56   2          break;
+  57   2        }
+  58   1        P0 = ntb[num];
+  59   1        Delay(1);
+  60   1        P0 = 0x00;
+  61   1      }
+  62          
+  63          /**
+  64           * @brief  延时函数
+  65           * @param  xms 延时时间
+  66           * @retval 无
+  67           */
+  68          void Delay(unsigned int xms) //延时函数： 时间
+  69          {
+  70   1        unsigned char i, j;
+  71   1        while (xms--)
+  72   1        {
+  73   2          i = 2;
+  74   2          j = 239;
+  75   2          do
+  76   2          {
+  77   3            while (--j)
+  78   3              ;
+  79   3          } while (--i);
+  80   2        }
+  81   1      }
+  82          /**
+  83           * @brief  获取独立按键键码
+  84           * @param  无
+  85           * @retval 按下按键的键码，范围：0~4，无按键按下时返回值为0
+  86           */
+  87          unsigned char Key()
+  88          {
+  89   1        unsigned char KeyNumber = 0;
+  90   1      
+  91   1        if (P3_1 == 0)
+  92   1        {
+  93   2          Delay(20);
+  94   2          while (P3_1 == 0)
+  95   2            ;
+  96   2          Delay(20);
+  97   2          KeyNumber = 1;
+  98   2        }
+  99   1        if (P3_0 == 0)
+ 100   1        {
+ 101   2          Delay(20);
+ 102   2          while (P3_0 == 0)
+ 103   2            ;
+ 104   2          Delay(20);
+ 105   2          KeyNumber = 2;
+ 106   2        }
+ 107   1        if (P3_2 == 0)
+ 108   1        {
+ 109   2          Delay(20);
+ 110   2          while (P3_2 == 0)
+ 111   2            ;
+ 112   2          Delay(20);
+ 113   2          KeyNumber = 3;
+ 114   2        }
+ 115   1        if (P3_3 == 0)
+C51 COMPILER V9.54   DK                                                                    06/27/2022 15:22:46 PAGE 3   
+
+ 116   1        {
+ 117   2          Delay(20);
+ 118   2          while (P3_3 == 0)
+ 119   2            ;
+ 120   2          Delay(20);
+ 121   2          KeyNumber = 4;
+ 122   2        }
+ 123   1      
+ 124   1        return KeyNumber;
+ 125   1      }
+ 126          
+ 127          /**
+ 128           * @brief  定时器0初始化，1毫秒@12.000MHz
+ 129           * @param  无
+ 130           * @retval 无
+ 131           */
+ 132          void Timer0_Init() //定时器： 初始化
+ 133          {
+ 134   1        TMOD = 0x01; // 0000 0001
+ 135   1        TF0 = 0;
+ 136   1        TR0 = 1;
+ 137   1        TH0 = 64535 / 256;
+ 138   1        TL0 = 64535 % 256;
+ 139   1        ET0 = 1;
+ 140   1        EA = 1;
+ 141   1        PT0 = 0;
+ 142   1      }
+ 143          
+ 144          /*定时器中断函数模板
+ 145          void Timer0_Routine() interrupt 1
+ 146          {
+ 147            static unsigned int T0Count;
+ 148            TL0 = 0x18;   //设置定时初值
+ 149            TH0 = 0xFC;   //设置定时初值
+ 150            T0Count++;
+ 151            if(T0Count>=1000)
+ 152            {
+ 153              T0Count=0;
+ 154          
+ 155            }
+ 156          }
+ 157          */
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    156    ----
+   CODE SIZE        =    224    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     10    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-C51 COMPILER V9.54   DK                                                                    06/21/2022 09:22:16 PAGE 2   
-
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.

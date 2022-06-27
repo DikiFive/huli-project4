@@ -389,11 +389,6 @@
               <FilePath>.\I2C.c</FilePath>
             </File>
             <File>
-              <FileName>Key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Key.c</FilePath>
-            </File>
-            <File>
               <FileName>LCD1602.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LCD1602.c</FilePath>

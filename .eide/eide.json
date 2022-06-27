@@ -1,5 +1,5 @@
 {
-  "name": "任务四",
+  "name": "huli-project4",
   "type": "C51",
   "mode": "Target 1",
   "toolchain": "Keil_C51",
@@ -13,7 +13,7 @@
           "sourceDirList": [],
           "libList": [],
           "incList": [
-            "./../../../software/keil5/C51/INC/Atmel"
+            "./../../../../software/keil5/C51/INC/Atmel"
           ],
           "defineList": []
         }
@@ -54,9 +54,7 @@
       }
     ]
   },
-  "excludeList": [
-    "<virtual_root>/Source Group 1/Key.c"
-  ],
+  "excludeList": [],
   "outDir": "build",
   "deviceName": null,
   "packDir": null,
@@ -89,7 +87,7 @@
         "sourceDirList": [],
         "libList": [],
         "incList": [
-          "../../../software/keil5/C51/INC/Atmel"
+          "../../../../software/keil5/C51/INC/Atmel"
         ],
         "defineList": []
       },

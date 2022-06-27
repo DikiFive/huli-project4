@@ -3,7 +3,6 @@
 ".\Objects\AT24C02.obj",
 ".\Objects\dk.obj",
 ".\Objects\I2C.obj",
-".\Objects\Key.obj",
 ".\Objects\LCD1602.obj" 
 TO ".\Objects\project" 
 PRINT(".\Listings\project.m51") RAMSIZE(256) 
